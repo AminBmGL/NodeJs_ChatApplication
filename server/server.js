@@ -15,14 +15,14 @@ app.use(express.static(publicPath));
 io.on('connection',(socket)=>{
     console.log("A new client id connected");
 
-    socket.emit('newMessage',{
-from:'amin@gmail.com',
-        text :"hello everybody",
-        createdAt :123
-    });
-
-    socket.on('createMessage',(message)=>{
-       console.log('Email created',message)
+    socket.on('createMessage',(message)=> {
+       console.log('Email created',message);
+       /*on.emit sends the data for every single connection | socket.emit sends the data for a single connection */
+    io.emit('newMessage',{
+    from:message.from,
+    text :message.text,
+    createdAt :new Date().getTime()
+});
     });
 
     socket.on('disconnect',()=>{
