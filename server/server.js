@@ -8,7 +8,7 @@ var port =process.env.PORT || 3000;
 var app =express();
 var server= http.createServer(app);
 var io=socketIO(server);
-var {generateMessage} =require('./../utils/message');
+var {generateMessage,generateLocationMessage} =require('./../utils/message');
 
 app.use(express.static(publicPath));
 
@@ -24,6 +24,9 @@ io.on('connection',(socket)=>{
        /*on.emit sends the data for every single connection | socket.emit sends the data for a single connection */
     io.emit('newMessage',generateMessage(message.from,message.text));
     callback('Acknowledgment from the server');
+    });
+    socket.on('createNewLocation',(position) =>{
+        io.emit('newLocationMessage',generateLocationMessage('Admin',position.latitude,position.longitude));
     });
 
     socket.on('disconnect',()=>{
