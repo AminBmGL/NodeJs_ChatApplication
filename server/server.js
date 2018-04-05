@@ -1,40 +1,39 @@
-const path =require('path');
-const publicPath =path.join(__dirname,'../public');
-const http =require('http');
-const express =require('express');
-const socketIO =require('socket.io');
+const path = require('path');
+const http = require('http');
+const express = require('express');
+const socketIO = require('socket.io');
 
-var port =process.env.PORT || 3000;
-var app =express();
-var server= http.createServer(app);
-var io=socketIO(server);
-var {generateMessage,generateLocationMessage} =require('./../utils/message');
+const {generateMessage, generateLocationMessage} = require('./utils/message');
+const publicPath = path.join(__dirname, '../public');
+const port = process.env.PORT || 3000;
+var app = express();
+var server = http.createServer(app);
+var io = socketIO(server);
 
 app.use(express.static(publicPath));
 
-io.on('connection',(socket)=>{
-    console.log("A new client id connected");
+io.on('connection', (socket) => {
+  console.log('New user connected');
 
-    socket.emit('newMessage',generateMessage("Admin","Welcome to the application chat"));
-    //socket.brodcast.emit : sends the messages for all the users exept the one that sends the message
-    socket.broadcast.emit('newMessage',generateMessage("Admin","New user joinded the app"));
+  socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
 
-    socket.on('createMessage',(message,callback)=> {
-       console.log('Email created',message);
-       /*on.emit sends the data for every single connection | socket.emit sends the data for a single connection */
-    io.emit('newMessage',generateMessage(message.from,message.text));
-    callback('Acknowledgment from the server');
-    });
-    socket.on('createNewLocation',(position) =>{
-        io.emit('newLocationMessage',generateLocationMessage('Admin',position.latitude,position.longitude));
-    });
+  socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
 
-    socket.on('disconnect',()=>{
-    console.log('The client was disconnected');
-    });
+  socket.on('createMessage', (message, callback) => {
+    console.log('createMessage', message);
+    io.emit('newMessage', generateMessage(message.from, message.text));
+    callback();
+  });
+
+  socket.on('createLocationMessage', (coords) => {
+    io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User was disconnected');
+  });
 });
 
-
-server.listen(port,() =>{
-    console.log(`server is running on port ${port}`);
+server.listen(port, () => {
+  console.log(`Server is up on ${port}`);
 });
